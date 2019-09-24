@@ -4,6 +4,9 @@
 // disponível no livro "OpenGL SuperBible", 
 // 2nd Edition, de Richard S. e Wright Jr.
 
+// Para compilar:
+// gcc -lglut -lGL -lGLU -lm nome.c -o nome
+
 #include <GL/glut.h>
 
 // Função callback chamada para fazer o desenho
