@@ -1,6 +1,7 @@
 #include <GL/glut.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 // Para compilar:
 // gcc -lglut -lGL -lGLU -lm nome.c -o nome.out
@@ -13,37 +14,53 @@ GLint primitiva;
 GLfloat vertice[12];
 
 void DesenhaEixos(void) {
+	// eixos principais
 	glBegin(GL_LINES);
-		glVertex2i(200,0);
-		glVertex2i(200,400);
+		glVertex2i(250,0);
+		glVertex2i(250,500);
 	glEnd();
 
 	glBegin(GL_LINES);
-		glVertex2i(0,200);
-		glVertex2i(400,200);
+		glVertex2i(0,250);
+		glVertex2i(500,250);
 	glEnd();
 
-	glColor3f(0.5f,0.5f,0.5f);
-
+	// eixos secundarios
+	glColor3f(0.5f,0.5f,0.5f);	// cor cinza
+	// horizontais
 	glBegin(GL_LINES);
-		glVertex2i(0,100);
-		glVertex2i(400,100);
+		glVertex2i(0,50);
+		glVertex2i(500,50);
 	glEnd();
 	glBegin(GL_LINES);
-		glVertex2i(0,300);
-		glVertex2i(400,300);
-	glEnd();
-	
-	glBegin(GL_LINES);
-		glVertex2i(100,0);
-		glVertex2i(100,400);
+		glVertex2i(0,150);
+		glVertex2i(500,150);
 	glEnd();
 	glBegin(GL_LINES);
-		glVertex2i(300,0);
-		glVertex2i(300,400);
+		glVertex2i(0,350);
+		glVertex2i(500,350);
 	glEnd();
-	
-	
+	glBegin(GL_LINES);
+		glVertex2i(0,450);
+		glVertex2i(500,450);
+	glEnd();
+	// verticais
+	glBegin(GL_LINES);
+		glVertex2i(50,0);
+		glVertex2i(50,500);
+	glEnd();
+	glBegin(GL_LINES);
+		glVertex2i(150,0);
+		glVertex2i(150,500);
+	glEnd();
+	glBegin(GL_LINES);
+		glVertex2i(350,0);
+		glVertex2i(350,500);
+	glEnd();
+	glBegin(GL_LINES);
+		glVertex2i(450,0);
+		glVertex2i(450,500);
+	glEnd();	
 }
 
 void DesenhaTriangulo(void) {
@@ -55,20 +72,20 @@ void DesenhaTriangulo(void) {
 }
 void DesenhaQuadrado(void) {
 	glBegin(GL_QUADS);
-		glVertex2f(-25.0f, -25.0f);
-		glVertex2f(-25.0f, 25.0f);
-		glVertex2f(25.0f, 25.0f);
-		glVertex2f(25.0f, -25.0f);
+		glVertex2f(vertice[0], vertice[1]);
+		glVertex2f(vertice[2], vertice[3]);
+		glVertex2f(vertice[4], vertice[5]);
+		glVertex2f(vertice[6], vertice[7]);
 	glEnd();
 }
 void DesenhaHexagono(void) {
      glBegin(GL_POLYGON);
-		glVertex2i(100,100);
-		glVertex2i(75,125);
-		glVertex2i(100,150);
-		glVertex2i(150,150);
-		glVertex2i(175,125);
-		glVertex2i(150,100);
+		glVertex2f(vertice[0], vertice[1]);
+		glVertex2f(vertice[2], vertice[3]);
+		glVertex2f(vertice[4], vertice[5]);
+		glVertex2f(vertice[6], vertice[7]);
+		glVertex2f(vertice[8], vertice[9]);
+		glVertex2f(vertice[10], vertice[11]);
 	glEnd();
 }
 
@@ -103,8 +120,8 @@ void Desenha(void) {
 
 // Inicializa parâmetros de rendering
 void Inicializa (void) {   
-    // Define a cor de fundo da janela de visualização como preta
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    // Define a cor de fundo da janela de visualização como cinza escuro
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 }
 
 void AlteraTamanhoJanela(GLsizei w, GLsizei h) {
@@ -120,14 +137,15 @@ void AlteraTamanhoJanela(GLsizei w, GLsizei h) {
 
 	// Estabelece a janela de seleção (left, right, bottom, top)
 	if (w <= h) 
-		gluOrtho2D (0.0f, 400.0f, 0.0f, 400.0f*h/w);
+		gluOrtho2D (0.0f, 500.0f, 0.0f, 500.0f*h/w);
 	else 
-		gluOrtho2D (0.0f, 400.0f*w/h, 0.0f, 400.0f);
+		gluOrtho2D (0.0f, 500.0f*w/h, 0.0f, 500.0f);
 }
 
-
-int main(int argc, char** argv) {
+void menuPrincipal() {
 	int opcao;
+
+	printf("-------- Passo 1 --------\n");
 	printf("Selecione o objeto: \n");
 	printf("1 - Quadrado\n");
 	printf("2 - Triangulo\n");
@@ -146,22 +164,96 @@ int main(int argc, char** argv) {
 			break;
 	}
 
-	vertice[0] = 200.0f;
-	vertice[1] = 300.0f;
-	vertice[2] = 100.0f;
-	vertice[3] = 100.0f;
-	vertice[4] = 300.0f;
-	vertice[5] = 100.0f;
+	printf("-------- Passo 2 --------\n");
+	float pontoCentral, aresta;
 
+	printf("Selecione o comportamento: \n");
+	printf("1 - Regular\n");
+	printf("2 - Irregular\n");
+	scanf("%d", &opcao);
 
-	//primitiva = HEXAGONO;
+	printf("-------- Passo 3 --------\n");
+	switch (opcao) {
+	case 1:
+		printf("Diga o ponto central: \n");
+		scanf("%f", &pontoCentral);
+
+		printf("Diga o tamanho da aresta: \n");
+		scanf("%f", &aresta);
+
+		if (primitiva == QUADRADO) {
+			// centro + desvio + aresta
+			vertice[0] = 250.0 + pontoCentral - aresta;	// x1 
+			vertice[1] = 250.0 + pontoCentral + aresta;	// y1 
+			vertice[2] = 250.0 + pontoCentral - aresta;	// x2 
+			vertice[3] = 250.0 + pontoCentral - aresta;	// y2 
+			vertice[4] = 250.0 + pontoCentral + aresta;	// x3 
+			vertice[5] = 250.0 + pontoCentral - aresta;	// y3 
+			vertice[6] = 250.0 + pontoCentral + aresta;	// x4 
+			vertice[7] = 250.0 + pontoCentral + aresta;	// y4 
+		} else if (primitiva == TRIANGULO) {
+			vertice[0] = 250.0 + pontoCentral 		  ;	// x1 
+			vertice[1] = 250.0 + pontoCentral + aresta;	// y1 
+			vertice[2] = 250.0 + pontoCentral - aresta;	// x2 
+			vertice[3] = 250.0 + pontoCentral - aresta;	// y2 
+			vertice[4] = 250.0 + pontoCentral + aresta;	// x3 
+			vertice[5] = 250.0 + pontoCentral - aresta;	// y3 
+		} else if (primitiva == HEXAGONO) { //http://calculo.cc/temas/temas_geometria_analitica/recta/imagenes/problemas/geometrico/p_20_graf.gif
+			vertice[0] = 250.0 + pontoCentral - aresta;	// x1 
+			vertice[1] = 250.0 + pontoCentral + (aresta*sqrt(3));	// y1 
+			vertice[2] = 250.0 + pontoCentral - (aresta*2);	// x2 
+			vertice[3] = 250.0 + pontoCentral   	  ;	// y2 
+			vertice[4] = 250.0 + pontoCentral - aresta;	// x3 
+			vertice[5] = 250.0 + pontoCentral - (aresta*sqrt(3));	// y3 
+			vertice[6] = 250.0 + pontoCentral + aresta;	// x4 
+			vertice[7] = 250.0 + pontoCentral - (aresta*sqrt(3));	// y4 
+			vertice[8] = 250.0 + pontoCentral + (aresta*2);	// x5 
+			vertice[9] = 250.0 + pontoCentral 		  ;	// y5 
+			vertice[10] = 250.0 + pontoCentral + aresta;	// x6 
+			vertice[11] = 250.0 + pontoCentral + (aresta*sqrt(3));	// y6 
+		}
+		break;
+	case 2:
+		printf("Digite a seguir as coordenadas do objeto\n");
+		printf("x1 = "); scanf("%f", &vertice[0]);
+		printf("y1 = "); scanf("%f", &vertice[1]);
+
+		printf("x2 = "); scanf("%f", &vertice[2]);
+		printf("y2 = "); scanf("%f", &vertice[3]);
+
+		printf("x3 = "); scanf("%f", &vertice[4]);
+		printf("y3 = "); scanf("%f", &vertice[5]);
+
+		if (primitiva == QUADRADO) {
+			printf("x4 = "); scanf("%f", &vertice[6]);
+			printf("y4 = "); scanf("%f", &vertice[7]);
+		}
+		if (primitiva == HEXAGONO) {
+			printf("x5 = "); scanf("%f", &vertice[8]);
+			printf("y5 = "); scanf("%f", &vertice[9]);
+
+			printf("x6 = "); scanf("%f", &vertice[10]);
+			printf("y6 = "); scanf("%f", &vertice[11]);
+		}
+
+		for (size_t i = 0; i < 11; i++) {
+			vertice[i] += 250.0;
+		}
+		
+		break;
+	}
+}
+
+int main(int argc, char** argv) {
+	// exibe menu com primeiras opcoes	
+	menuPrincipal();
+
 	glutInit (&argc, argv);
 	// double buffer
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-
 	// tamanho e posicao padrao
-	glutInitWindowSize(400,400);
-	//glutInitWindowPosition(20,20);
+	glutInitWindowSize(500,500);
+	glutInitWindowPosition(100,100);
 
 	// janela e desenha
 	glutCreateWindow("Trabalho 1");
