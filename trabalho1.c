@@ -11,7 +11,10 @@
 #define HEXAGONO 3
 
 GLint primitiva;
-GLfloat vertice[12];
+GLfloat vertice[12],
+		x_trans = 0.0, y_trans = 0.0,
+		escala = 1.0,
+		rotacao = 0.0;
 
 void DesenhaEixos(void) {
 	// eixos principais
@@ -101,6 +104,17 @@ void Desenha(void) {
 
 	// Define a cor corrente
 	glColor3f(1.0f,1.0f,0.0f);
+
+	// translacao
+	glTranslatef(x_trans, y_trans, 0.0f);
+	
+	// escala
+	glTranslatef(250.0, 250.0, 0.0);
+	glScalef(escala, escala, 1.0);
+
+	// rotacao
+	glRotatef(rotacao, 0.0, 0.0, 1.0);
+	glTranslatef(-250.0, -250.0, 0.0);
 
 	// Desenha uma primitiva     
 	switch (primitiva) {
@@ -244,6 +258,94 @@ void menuPrincipal() {
 	}
 }
 
+// Gerenciamento do menu com as opções de cores           
+void MenuTranslacao(int op) {
+	switch(op) {
+		case 0:
+			y_trans += 10.0;
+			break;
+		case 1:
+			y_trans -= 10.0;
+			break;
+		case 2:
+			x_trans += 10.0;
+			break;
+		case 3:
+			x_trans -= 10.0;
+			break;
+	}
+	glutPostRedisplay();
+}   
+
+void MenuEscala(int op) {
+	switch (op)	{
+	case 0:
+		escala /= 2;
+		break;
+	case 1:
+		escala *= 2;
+	}
+}
+
+void MenuRotacao(int op){
+	switch (op) {
+	case 0:
+		rotacao += 30.0;
+		break;
+	case 1:
+		rotacao += 45.0;
+		break;
+	case 2:
+		rotacao += 60.0;
+		break;
+	}
+}
+
+// Gerenciamento do menu principal           
+void MenuPrincipal(int op){}
+
+// Criacao do Menu
+void CriaMenu() 
+{
+    int menu, submenu1, submenu2, submenu3;
+
+	submenu1 = glutCreateMenu(MenuTranslacao);
+	glutAddMenuEntry("Acima",0);
+	glutAddMenuEntry("Abaixo",1);
+	glutAddMenuEntry("Direita",2);
+	glutAddMenuEntry("Esquerda",3);
+
+    submenu2 = glutCreateMenu(MenuEscala);
+	glutAddMenuEntry("x0.5",0);
+	//glutAddMenuEntry("x1.5",1);
+	glutAddMenuEntry("x2.0",1);
+
+    submenu3 = glutCreateMenu(MenuRotacao);
+	glutAddMenuEntry("30º",0);
+	glutAddMenuEntry("45º",1);
+	glutAddMenuEntry("60º",2);
+	
+	menu = glutCreateMenu(MenuPrincipal);
+	glutAddMenuEntry("Reflexao",0);
+	glutAddMenuEntry("Cisalhamento",1);
+	glutAddSubMenu("Translacao",submenu1);
+    glutAddSubMenu("Escala",submenu2);
+	glutAddSubMenu("Rotacao",submenu3);
+    
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
+void GerenciaMouse(int button, int state, int x, int y) {        
+	if (button == GLUT_RIGHT_BUTTON)
+		if (state == GLUT_DOWN) 
+			CriaMenu();
+			
+	glutPostRedisplay();
+}
+
+
+
+
 int main(int argc, char** argv) {
 	// exibe menu com primeiras opcoes	
 	menuPrincipal();
@@ -259,8 +361,11 @@ int main(int argc, char** argv) {
 	glutCreateWindow("Trabalho 1");
 	glutDisplayFunc(Desenha);
 
-	//funcao necessaria
+	// funcao necessaria
 	glutReshapeFunc(AlteraTamanhoJanela);
+	
+	glutMouseFunc(GerenciaMouse);
+	
 	Inicializa();
 	glutMainLoop();
 
