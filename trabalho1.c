@@ -10,67 +10,53 @@
 #define QUADRADO 2
 #define HEXAGONO 3
 
+float pontoCentral_x = 0.0, pontoCentral_y = 0.0, aresta = 0.0;
+int criarComClique = 0;
 GLint primitiva;
 GLfloat vertice[12],
 		x_trans = 0.0, y_trans = 0.0,
 		escala = 1.0,
-		rotacao = 0.0;
+		rotacao = 0.0,
+		reflexao = 1.0,
+		cisalhamento = 0.0;
+
 
 void DesenhaEixos(void) {
-	// eixos principais
-	glBegin(GL_LINES);
-		glVertex2i(250,0);
-		glVertex2i(250,500);
-	glEnd();
-
-	glBegin(GL_LINES);
-		glVertex2i(0,250);
-		glVertex2i(500,250);
-	glEnd();
-
+    int i = 0;
 	// eixos secundarios
 	glColor3f(0.5f,0.5f,0.5f);	// cor cinza
-	// horizontais
+    for (i = -5; i < 5; i++) {
+        // verticais
+        glBegin(GL_LINES);
+            glVertex2f((GLfloat) i*50,-250);
+            glVertex2f((GLfloat) i*50,250);
+        glEnd();
+
+        // horizontais
+        glBegin(GL_LINES);
+            glVertex2f(-250,(GLfloat) i*50);
+            glVertex2f(250,(GLfloat) i*50);
+        glEnd();
+    }
+
+    // eixos principais
+    glColor3f(1.0f,1.0f,1.0f);
 	glBegin(GL_LINES);
-		glVertex2i(0,50);
-		glVertex2i(500,50);
+		glVertex2f(0,-250);
+		glVertex2f(0,250);
 	glEnd();
+
 	glBegin(GL_LINES);
-		glVertex2i(0,150);
-		glVertex2i(500,150);
+		glVertex2f(-250,0);
+		glVertex2f(250,0);
 	glEnd();
-	glBegin(GL_LINES);
-		glVertex2i(0,350);
-		glVertex2i(500,350);
-	glEnd();
-	glBegin(GL_LINES);
-		glVertex2i(0,450);
-		glVertex2i(500,450);
-	glEnd();
-	// verticais
-	glBegin(GL_LINES);
-		glVertex2i(50,0);
-		glVertex2i(50,500);
-	glEnd();
-	glBegin(GL_LINES);
-		glVertex2i(150,0);
-		glVertex2i(150,500);
-	glEnd();
-	glBegin(GL_LINES);
-		glVertex2i(350,0);
-		glVertex2i(350,500);
-	glEnd();
-	glBegin(GL_LINES);
-		glVertex2i(450,0);
-		glVertex2i(450,500);
-	glEnd();	
 }
 
 void DesenhaTriangulo(void) {
 	glBegin(GL_TRIANGLES);
-		glVertex2f(vertice[0], vertice[1]);
-		glVertex2f(vertice[2], vertice[3]);
-		glVertex2f(vertice[4], vertice[5]);
+		glVertex2f(vertice[0], vertice[1]*reflexao);
+		glVertex2f(vertice[2], vertice[3]*reflexao);
+		glVertex2f(vertice[4], vertice[5]*reflexao);
 	glEnd();
 }
 void DesenhaQuadrado(void) {
@@ -98,8 +84,6 @@ void Desenha(void) {
 	           
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	// Define a cor dos eixos
-	glColor3f(1.0f,1.0f,1.0f);
 	DesenhaEixos();
 
 	// Define a cor corrente
@@ -109,12 +93,19 @@ void Desenha(void) {
 	glTranslatef(x_trans, y_trans, 0.0f);
 	
 	// escala
-	glTranslatef(250.0, 250.0, 0.0);
 	glScalef(escala, escala, 1.0);
 
 	// rotacao
 	glRotatef(rotacao, 0.0, 0.0, 1.0);
-	glTranslatef(-250.0, -250.0, 0.0);
+
+	// cisalhamento
+	GLfloat cisalhar[16] = {
+		1.0f, 0.0f, 0.0f, 0.0f,
+		cisalhamento, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+	};
+	glMultMatrixf(cisalhar);
 
 	// Desenha uma primitiva     
 	switch (primitiva) {
@@ -138,22 +129,18 @@ void Inicializa (void) {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 }
 
-void AlteraTamanhoJanela(GLsizei w, GLsizei h) {
-	// Evita a divisao por zero
-	if(h == 0) h = 1;
-	       
-	// Especifica as dimensões da Viewport
-	glViewport(0, 0, w, h);
-
-	// Inicializa o sistema de coordenadas
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	// Estabelece a janela de seleção (left, right, bottom, top)
-	if (w <= h) 
-		gluOrtho2D (0.0f, 500.0f, 0.0f, 500.0f*h/w);
-	else 
-		gluOrtho2D (0.0f, 500.0f*w/h, 0.0f, 500.0f);
+void reshape(int w, int h) {
+    glViewport(0, 0, (GLsizei) w, (GLsizei) h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    if (w <= h)
+        glOrtho(-250.0, 250.0, -250.0*(GLfloat)h/(GLfloat)w, 
+                250.0*(GLfloat)h/(GLfloat)w, -250.0, 250.0);
+    else
+        glOrtho(-250.0*(GLfloat)w/(GLfloat)h, 
+                250.0*(GLfloat)w/(GLfloat)h, -250.0, 250.0, -250.0, 250.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 }
 
 void menuPrincipal() {
@@ -179,7 +166,6 @@ void menuPrincipal() {
 	}
 
 	printf("-------- Passo 2 --------\n");
-	float pontoCentral, aresta;
 
 	printf("Selecione o comportamento: \n");
 	printf("1 - Regular\n");
@@ -189,42 +175,45 @@ void menuPrincipal() {
 	printf("-------- Passo 3 --------\n");
 	switch (opcao) {
 	case 1:
-		printf("Diga o ponto central: \n");
-		scanf("%f", &pontoCentral);
+		printf("Diga o ponto central em x: \n");
+		scanf("%f", &pontoCentral_x);
+
+		printf("Diga o ponto central em y: \n");
+		scanf("%f", &pontoCentral_y);
 
 		printf("Diga o tamanho da aresta: \n");
 		scanf("%f", &aresta);
 
 		if (primitiva == QUADRADO) {
 			// centro + desvio + aresta
-			vertice[0] = 250.0 + pontoCentral - aresta;	// x1 
-			vertice[1] = 250.0 + pontoCentral + aresta;	// y1 
-			vertice[2] = 250.0 + pontoCentral - aresta;	// x2 
-			vertice[3] = 250.0 + pontoCentral - aresta;	// y2 
-			vertice[4] = 250.0 + pontoCentral + aresta;	// x3 
-			vertice[5] = 250.0 + pontoCentral - aresta;	// y3 
-			vertice[6] = 250.0 + pontoCentral + aresta;	// x4 
-			vertice[7] = 250.0 + pontoCentral + aresta;	// y4 
+			vertice[0] = pontoCentral_x - aresta;	// x1 
+			vertice[1] = pontoCentral_y + aresta;	// y1 
+			vertice[2] = pontoCentral_x - aresta;	// x2 
+			vertice[3] = pontoCentral_y - aresta;	// y2 
+			vertice[4] = pontoCentral_x + aresta;	// x3 
+			vertice[5] = pontoCentral_y - aresta;	// y3 
+			vertice[6] = pontoCentral_x + aresta;	// x4 
+			vertice[7] = pontoCentral_y + aresta;	// y4 
 		} else if (primitiva == TRIANGULO) {
-			vertice[0] = 250.0 + pontoCentral 		  ;	// x1 
-			vertice[1] = 250.0 + pontoCentral + aresta;	// y1 
-			vertice[2] = 250.0 + pontoCentral - aresta;	// x2 
-			vertice[3] = 250.0 + pontoCentral - aresta;	// y2 
-			vertice[4] = 250.0 + pontoCentral + aresta;	// x3 
-			vertice[5] = 250.0 + pontoCentral - aresta;	// y3 
+			vertice[0] = pontoCentral_x 		  ;	// x1 
+			vertice[1] = pontoCentral_y + aresta;	// y1 
+			vertice[2] = pontoCentral_x - aresta;	// x2 
+			vertice[3] = pontoCentral_y - aresta;	// y2 
+			vertice[4] = pontoCentral_x + aresta;	// x3 
+			vertice[5] = pontoCentral_y - aresta;	// y3 
 		} else if (primitiva == HEXAGONO) { //http://calculo.cc/temas/temas_geometria_analitica/recta/imagenes/problemas/geometrico/p_20_graf.gif
-			vertice[0] = 250.0 + pontoCentral - aresta;	// x1 
-			vertice[1] = 250.0 + pontoCentral + (aresta*sqrt(3));	// y1 
-			vertice[2] = 250.0 + pontoCentral - (aresta*2);	// x2 
-			vertice[3] = 250.0 + pontoCentral   	  ;	// y2 
-			vertice[4] = 250.0 + pontoCentral - aresta;	// x3 
-			vertice[5] = 250.0 + pontoCentral - (aresta*sqrt(3));	// y3 
-			vertice[6] = 250.0 + pontoCentral + aresta;	// x4 
-			vertice[7] = 250.0 + pontoCentral - (aresta*sqrt(3));	// y4 
-			vertice[8] = 250.0 + pontoCentral + (aresta*2);	// x5 
-			vertice[9] = 250.0 + pontoCentral 		  ;	// y5 
-			vertice[10] = 250.0 + pontoCentral + aresta;	// x6 
-			vertice[11] = 250.0 + pontoCentral + (aresta*sqrt(3));	// y6 
+			vertice[0] = pontoCentral_x - aresta;	// x1 
+			vertice[1] = pontoCentral_y + (aresta*sqrt(3));	// y1 
+			vertice[2] = pontoCentral_x - (aresta*2);	// x2 
+			vertice[3] = pontoCentral_y   	  ;	// y2 
+			vertice[4] = pontoCentral_x - aresta;	// x3 
+			vertice[5] = pontoCentral_y - (aresta*sqrt(3));	// y3 
+			vertice[6] = pontoCentral_x + aresta;	// x4 
+			vertice[7] = pontoCentral_y - (aresta*sqrt(3));	// y4 
+			vertice[8] = pontoCentral_x + (aresta*2);	// x5 
+			vertice[9] = pontoCentral_y 		  ;	// y5 
+			vertice[10] = pontoCentral_x + aresta;	// x6 
+			vertice[11] = pontoCentral_y + (aresta*sqrt(3));	// y6 
 		}
 		break;
 	case 2:
@@ -249,16 +238,11 @@ void menuPrincipal() {
 			printf("x6 = "); scanf("%f", &vertice[10]);
 			printf("y6 = "); scanf("%f", &vertice[11]);
 		}
-
-		for (size_t i = 0; i < 11; i++) {
-			vertice[i] += 250.0;
-		}
-		
 		break;
 	}
 }
 
-// Gerenciamento do menu com as opções de cores           
+// Gerenciamento do menu      
 void MenuTranslacao(int op) {
 	switch(op) {
 		case 0:
@@ -302,11 +286,19 @@ void MenuRotacao(int op){
 }
 
 // Gerenciamento do menu principal           
-void MenuPrincipal(int op){}
+void MenuPrincipal(int op) {
+	switch (op)	{
+	case 0:
+		reflexao *= -1.0;
+		break;
+	case 1:
+		cisalhamento += 0.1;
+		break;
+	}
+}
 
 // Criacao do Menu
-void CriaMenu() 
-{
+void CriaMenu() {
     int menu, submenu1, submenu2, submenu3;
 
 	submenu1 = glutCreateMenu(MenuTranslacao);
@@ -317,14 +309,13 @@ void CriaMenu()
 
     submenu2 = glutCreateMenu(MenuEscala);
 	glutAddMenuEntry("x0.5",0);
-	//glutAddMenuEntry("x1.5",1);
 	glutAddMenuEntry("x2.0",1);
 
     submenu3 = glutCreateMenu(MenuRotacao);
-	glutAddMenuEntry("30º",0);
-	glutAddMenuEntry("45º",1);
-	glutAddMenuEntry("60º",2);
-	
+	glutAddMenuEntry("30 graus",0);
+	glutAddMenuEntry("45 graus",1);
+	glutAddMenuEntry("60 graus",2);
+
 	menu = glutCreateMenu(MenuPrincipal);
 	glutAddMenuEntry("Reflexao",0);
 	glutAddMenuEntry("Cisalhamento",1);
@@ -343,9 +334,6 @@ void GerenciaMouse(int button, int state, int x, int y) {
 	glutPostRedisplay();
 }
 
-
-
-
 int main(int argc, char** argv) {
 	// exibe menu com primeiras opcoes	
 	menuPrincipal();
@@ -362,7 +350,7 @@ int main(int argc, char** argv) {
 	glutDisplayFunc(Desenha);
 
 	// funcao necessaria
-	glutReshapeFunc(AlteraTamanhoJanela);
+	glutReshapeFunc(reshape);
 	
 	glutMouseFunc(GerenciaMouse);
 	
