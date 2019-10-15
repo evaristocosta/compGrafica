@@ -1,30 +1,73 @@
+/*	=========================================================================
+*				TRABALHO 1: Transformações Geométricas em 2D
+*
+*	Este software representa a solução do proposto na Pratica 1 
+*	da disciplina de Computacao Grafica, a qual foi dividica em 
+*	8 requisitos:
+*	R1) Permitir ao usuário escolher no mínimo as seguintes figuras
+*	geométricas planas a serem desenhadas: Triângulo, Quadrado,
+*	Hexágono.
+*	R2) Permitir ao usuário digitar as coordenadas dos vértices de cada
+*	figura. Neste caso, os polígonos a serem desenhados poderão ser
+*	irregulares.
+*	R3) Permitir ao usuário digitar o ponto central e o tamanho da
+*	aresta (borda) de cada polígono. Neste caso os polígonos
+*	desenhados serão regulares.
+*	R4) Pode ser utilizado adicional e opcionalmente cliques de mouse
+*	para determinar os vértices e/ou o centro de cada figura, caso o
+*	desenvolvedor se sinta apto a fazer desta forma.
+*	R5) Desenhar a figura na tela conforme parâmetros de entrada
+*	fornecidos pelo usuário (requisitos R1 a R4).
+*	R6) O usuário poderá escolher qualquer uma das seguintes TGs a
+*	serem realizadas sobre uma figura já desenhada:
+*	- Translação, Escala, Rotação, Reflexão, Cisalhamento
+*	R7) Conforme a TG escolhida, o programa deverá solicitar ao
+*	usuário os parâmetros correspondentes e necessários para realizar
+*	a transformação.
+*	R8) Após confirmação do usuário o programa aplica a TG escolhida
+*	conforme os parâmetros informados (R5, R6 e R7), calcula e mostra
+*	o resultado na tela.
+*
+*	Com excecao do requisito R4 (que era opcional), todos requisitos 
+*	foram implementados, como pode-se ver a seguir
+*
+*	Este software foi desenvolvido por:
+*	- Lucas Costa 
+*	- RA: 1683993
+*	=========================================================================
+*/
+
+// Para compilar e executar (em linux):
+// gcc -lglut -lGL -lGLU -lm nome_do_arquivo.c -o nome_do_arquivo.out && ./nome_do_arquivo.out
+
 #include <GL/glut.h>
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 
-// Para compilar:
-// gcc -lglut -lGL -lGLU -lm nome.c -o nome.out
-
+// inteiros de definicao para os objetos que podem ser construidos
 #define TRIANGULO 1
 #define QUADRADO 2
 #define HEXAGONO 3
 
+// >>>>>> VARIAVEIS GLOBAIS >>>>>>
+// para definir objetos regulares
 float pontoCentral_x = 0.0, pontoCentral_y = 0.0, aresta = 0.0;
-int criarComClique = 0;
+// define qual objeto deve ser construido
 GLint primitiva;
-GLfloat vertice[12],
-		x_trans = 0.0, y_trans = 0.0,
-		escala = 1.0,
-		rotacao = 0.0,
-		reflexao = 1.0,
-		cisalhamento = 0.0;
+GLfloat vertice[12],					// pontos do objeto
+		x_trans = 0.0, y_trans = 0.0,	// variaveis de translacao
+		escala = 1.0,					// variavel de escala (porcentagem)
+		rotacao = 0.0,					// variavel para rotacao (angulo)
+		reflexao = 1.0,					// variavel de reflexao (positivo ou negativo)
+		cisalhamento = 0.0;				// variavel para o cisalhamento
 
 
+// Funcao com unico proposito de desenhar os eixos no plano do desenho
 void DesenhaEixos(void) {
     int i = 0;
-	// eixos secundarios
-	glColor3f(0.5f,0.5f,0.5f);	// cor cinza
+	// eixos secundarios primeiro
+	glColor3f(0.7, 0.7, 0.7);	// cor cinza
     for (i = -5; i < 5; i++) {
         // verticais
         glBegin(GL_LINES);
@@ -40,7 +83,7 @@ void DesenhaEixos(void) {
     }
 
     // eixos principais
-    glColor3f(1.0f,1.0f,1.0f);
+    glColor3f(0.9, 0.9, 0.9);	// cor branca
 	glBegin(GL_LINES);
 		glVertex2f(0,-250);
 		glVertex2f(0,250);
@@ -52,13 +95,7 @@ void DesenhaEixos(void) {
 	glEnd();
 }
 
-void DesenhaTriangulo(void) {
-	glBegin(GL_TRIANGLES);
-		glVertex2f(vertice[0], vertice[1]*reflexao);
-		glVertex2f(vertice[2], vertice[3]*reflexao);
-		glVertex2f(vertice[4], vertice[5]*reflexao);
-	glEnd();
-}
+// Determina o desenho de um quadrado
 void DesenhaQuadrado(void) {
 	glBegin(GL_QUADS);
 		glVertex2f(vertice[0], vertice[1]);
@@ -67,6 +104,16 @@ void DesenhaQuadrado(void) {
 		glVertex2f(vertice[6], vertice[7]);
 	glEnd();
 }
+
+// Determina o desenho de um triangulo
+void DesenhaTriangulo(void) {
+	glBegin(GL_TRIANGLES);
+		glVertex2f(vertice[0], vertice[1]);
+		glVertex2f(vertice[2], vertice[3]);
+		glVertex2f(vertice[4], vertice[5]);
+	glEnd();
+}
+// Determina o desenho de um hexagono
 void DesenhaHexagono(void) {
      glBegin(GL_POLYGON);
 		glVertex2f(vertice[0], vertice[1]);
@@ -78,36 +125,51 @@ void DesenhaHexagono(void) {
 	glEnd();
 }
 
+/*	>>>>>> Funcao principal de desenho na tela >>>>>>
+	Responsavel por aplicar todas as transformacoes requeridas
+	e funcoes anteriormente definidas; recarrega a cada 
+	interacao com o usuario e aplica as	diferencas.
+*/
 void Desenha(void) {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	           
 	glClear(GL_COLOR_BUFFER_BIT);
 
+	// define os eixos da figura
 	DesenhaEixos();
 
 	// Define a cor corrente
-	glColor3f(1.0f,1.0f,0.0f);
+	glColor3f(1.0f,1.0f,0.0f);	// cor amarela
 
-	// translacao
+	// efetua translacao
 	glTranslatef(x_trans, y_trans, 0.0f);
 	
-	// escala
+	// efetua escala
 	glScalef(escala, escala, 1.0);
 
-	// rotacao
+	// efetua rotacao
 	glRotatef(rotacao, 0.0, 0.0, 1.0);
 
-	// cisalhamento
+	// efetua cisalhamento
 	GLfloat cisalhar[16] = {
-		1.0f, 0.0f, 0.0f, 0.0f,
-		cisalhamento, 1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f
+		1.0, 0.0, 0.0, 0.0,
+		cisalhamento, 1.0, 0.0, 0.0,
+		0.0, 0.0, 1.0, 0.0,
+		0.0, 0.0, 0.0, 1.0
 	};
 	glMultMatrixf(cisalhar);
 
-	// Desenha uma primitiva     
+	// efetua reflexao
+	GLfloat reflexao_m[16] = {
+		1.0, 0.0, 0.0, 0.0,
+		0.0, reflexao, 0.0, 0.0,
+		0.0, 0.0, 1.0, 0.0,
+		0.0, 0.0, 0.0, 1.0
+	};
+	glMultMatrixf(reflexao_m);
+
+	// Desenha o objeto escolhido     
 	switch (primitiva) {
 		case QUADRADO:  
 			DesenhaQuadrado();
@@ -120,16 +182,18 @@ void Desenha(void) {
 	        break;
 	}
 
+	// cor do fundo
+	glClearColor(0.2, 0.2, 0.2, 0.0);
 	glutSwapBuffers();
 }
 
-// Inicializa parâmetros de rendering
-void Inicializa (void) {   
-    // Define a cor de fundo da janela de visualização como cinza escuro
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-}
-
-void reshape(int w, int h) {
+/*	>>>>>> Funcao de alteracao de tamanho de janela >>>>>>
+	Permite que o usuario altere o tamanho da janela sem afetar
+	as dimensoes do objeto desenhado. Alem disso, permite redefinir
+	o ponto central da janela, como sendo o centro real e nao o 
+	canto inferior esquerdo
+*/
+void AlteraTamanhoJanela(int w, int h) {
     glViewport(0, 0, (GLsizei) w, (GLsizei) h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -143,6 +207,7 @@ void reshape(int w, int h) {
     glLoadIdentity();
 }
 
+// funcao de direcionamento do usuario
 void menuPrincipal() {
 	int opcao;
 
@@ -166,7 +231,6 @@ void menuPrincipal() {
 	}
 
 	printf("-------- Passo 2 --------\n");
-
 	printf("Selecione o comportamento: \n");
 	printf("1 - Regular\n");
 	printf("2 - Irregular\n");
@@ -174,6 +238,11 @@ void menuPrincipal() {
 
 	printf("-------- Passo 3 --------\n");
 	switch (opcao) {
+	/* 	Caso o usuario tenha escolhido objeto regular, ele deve
+		definir o ponto central em x e y e dizer o tamanho que
+		o objeto deve ter, com base na aresta, sendo esta a
+		distancia do ponto central
+	*/
 	case 1:
 		printf("Diga o ponto central em x: \n");
 		scanf("%f", &pontoCentral_x);
@@ -216,8 +285,9 @@ void menuPrincipal() {
 			vertice[11] = pontoCentral_y + (aresta*sqrt(3));	// y6 
 		}
 		break;
+	// caso contrario, todas as coordenadas devem ser descritas
 	case 2:
-		printf("Digite a seguir as coordenadas do objeto\n");
+		printf("Digite a seguir as coordenadas do objeto (sentido horario)\n");
 		printf("x1 = "); scanf("%f", &vertice[0]);
 		printf("y1 = "); scanf("%f", &vertice[1]);
 
@@ -227,7 +297,7 @@ void menuPrincipal() {
 		printf("x3 = "); scanf("%f", &vertice[4]);
 		printf("y3 = "); scanf("%f", &vertice[5]);
 
-		if (primitiva == QUADRADO) {
+		if (primitiva == QUADRADO || primitiva == HEXAGONO) {
 			printf("x4 = "); scanf("%f", &vertice[6]);
 			printf("y4 = "); scanf("%f", &vertice[7]);
 		}
@@ -242,26 +312,31 @@ void menuPrincipal() {
 	}
 }
 
-// Gerenciamento do menu      
+// gerenciamento das opcoes de translacao
 void MenuTranslacao(int op) {
+	// sao quatro opcoes, nos dois eixos:
+	// para cima, para baixo, esquerda e direita
 	switch(op) {
 		case 0:
-			y_trans += 10.0;
+			y_trans += 20.0;
 			break;
 		case 1:
-			y_trans -= 10.0;
+			y_trans -= 20.0;
 			break;
 		case 2:
-			x_trans += 10.0;
+			x_trans += 20.0;
 			break;
 		case 3:
-			x_trans -= 10.0;
+			x_trans -= 20.0;
 			break;
 	}
 	glutPostRedisplay();
 }   
 
+// gerenciamento das opcoes de escala
 void MenuEscala(int op) {
+	// sao duas opcoes de escala: o dobro ou a metade do 
+	// tamanho original
 	switch (op)	{
 	case 0:
 		escala /= 2;
@@ -271,7 +346,10 @@ void MenuEscala(int op) {
 	}
 }
 
+// gerenciamento das opcoes de rotacao
 void MenuRotacao(int op){
+	// sao tres opcoes de angulo, no sentido horario:
+	// 30, 45 e 60 graus
 	switch (op) {
 	case 0:
 		rotacao += 30.0;
@@ -285,13 +363,17 @@ void MenuRotacao(int op){
 	}
 }
 
-// Gerenciamento do menu principal           
+// gerenciamento das opcoes de reflexao e cisalhamento
 void MenuPrincipal(int op) {
 	switch (op)	{
 	case 0:
+		// para realizar a reflexao, deve-se somente negativar
+		// o valor desta variavel
 		reflexao *= -1.0;
 		break;
 	case 1:
+		// o cisalhamento acontece apenas no eixo x, sem retorno
+		// somente para exemplificar
 		cisalhamento += 0.1;
 		break;
 	}
@@ -301,21 +383,25 @@ void MenuPrincipal(int op) {
 void CriaMenu() {
     int menu, submenu1, submenu2, submenu3;
 
+	// opcoes do menu de translacao
 	submenu1 = glutCreateMenu(MenuTranslacao);
 	glutAddMenuEntry("Acima",0);
 	glutAddMenuEntry("Abaixo",1);
 	glutAddMenuEntry("Direita",2);
 	glutAddMenuEntry("Esquerda",3);
 
+	// opcoes do menu de escala
     submenu2 = glutCreateMenu(MenuEscala);
 	glutAddMenuEntry("x0.5",0);
 	glutAddMenuEntry("x2.0",1);
 
+	// opcoes do menu de rotacao
     submenu3 = glutCreateMenu(MenuRotacao);
 	glutAddMenuEntry("30 graus",0);
 	glutAddMenuEntry("45 graus",1);
 	glutAddMenuEntry("60 graus",2);
 
+	// menu geral com link para submenus anteriores
 	menu = glutCreateMenu(MenuPrincipal);
 	glutAddMenuEntry("Reflexao",0);
 	glutAddMenuEntry("Cisalhamento",1);
@@ -323,9 +409,11 @@ void CriaMenu() {
     glutAddSubMenu("Escala",submenu2);
 	glutAddSubMenu("Rotacao",submenu3);
     
+	// define abrir menu com botao direito do mouse
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
+// identifica o clique direito do mouse
 void GerenciaMouse(int button, int state, int x, int y) {        
 	if (button == GLUT_RIGHT_BUTTON)
 		if (state == GLUT_DOWN) 
@@ -348,13 +436,10 @@ int main(int argc, char** argv) {
 	// janela e desenha
 	glutCreateWindow("Trabalho 1");
 	glutDisplayFunc(Desenha);
-
-	// funcao necessaria
-	glutReshapeFunc(reshape);
+	glutReshapeFunc(AlteraTamanhoJanela);
 	
 	glutMouseFunc(GerenciaMouse);
 	
-	Inicializa();
 	glutMainLoop();
 
 	return 0;
