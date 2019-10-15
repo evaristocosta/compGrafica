@@ -250,6 +250,7 @@ void menuPrincipal() {
         break;
     default:
         printf("\nOpcao nao existe. \nFinalizando...\n");
+        exit(-1);
         break;
     }
 }
