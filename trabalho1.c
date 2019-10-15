@@ -29,7 +29,7 @@
 *	o resultado na tela.
 *
 *	Com excecao do requisito R4 (que era opcional), todos requisitos 
-*	foram implementados, como pode-se ver a seguir
+*	foram implementados.
 *
 *	Este software foi desenvolvido por:
 *	- Lucas Costa 
@@ -66,7 +66,7 @@ GLfloat vertice[12],					// pontos do objeto
 // Funcao com unico proposito de desenhar os eixos no plano do desenho
 void DesenhaEixos(void) {
     int i = 0;
-	// eixos secundarios primeiro
+	// eixos secundarios
 	glColor3f(0.7, 0.7, 0.7);	// cor cinza
     for (i = -5; i < 5; i++) {
         // verticais
@@ -83,7 +83,7 @@ void DesenhaEixos(void) {
     }
 
     // eixos principais
-    glColor3f(0.9, 0.9, 0.9);	// cor branca
+    glColor3f(0.9, 0.9, 0.9);
 	glBegin(GL_LINES);
 		glVertex2f(0,-250);
 		glVertex2f(0,250);

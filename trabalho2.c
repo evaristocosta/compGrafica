@@ -1,21 +1,53 @@
+/*	=========================================================================
+*				    TRABALHO 2: Curvas em 2D usando OpenGL
+*
+*   Desenvolver um programa que utilize rotinas OpenGL e que atenda
+*   aos seguintes requisitos:
+*   R1) O programa deverá desenhar uma Curva Bézier em formato
+*   2D conforme pontos de controle inseridos pelo usuário.
+*   R2) O usuário poderá informar por digitação 3, 5 ou 7 pontos de
+*   controle para a curva.
+*   R3) o usuário poderá informar alternativamente por cliques de
+*   mouse 3, 5 ou 7 pontos de controle para a curva.
+*   R4) Deverá ser desenhado um sistema de referência na tela de
+*   visualização, com escala indicativa das distâncias (dividir em 10
+*   segmentos cada eixo do sistema de coordenadas).
+*   R5) As entradas de coordenadas devem ser validadas conforme
+*   segue:
+*       - As coordenadas devem estar dentro dos limites do
+*       sistema de coordenadas do universo (da tela);
+*       - Não permitir a entrada de pontos repetidos (iguais);
+*       - Permitir a entrada de pontos alinhados.
+*   
+*   Todos os requisitos foram atendidos e implementados.
+*       
+*	Este software foi desenvolvido por:
+*	- Lucas Costa 
+*	- RA: 1683993
+*	=========================================================================   
+*/
+
+// Para compilar e executar (em linux):
+// gcc -lglut -lGL -lGLU -lm nome_do_arquivo.c -o nome_do_arquivo.out && ./nome_do_arquivo.out
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
 
-// Para compilar e executar (em linux):
-// gcc -lglut -lGL -lGLU -lm nome_do_arquivo.c -o nome_do_arquivo.out && ./nome_do_arquivo.out
-
+// >>>>>> VARIAVEIS GLOBAIS >>>>>>
+// define se deve haver uso do mouse
 int mouse = 0;
-GLfloat ctrlpoints[7][3];
-GLint qtde_pontos = 0;
-GLint qtde_contador = 0;
+// pontos da curva a ser plotada
+GLfloat pontos_controle_curva[7][3];
+GLint qtde_pontos = 0, qtde_contador = 0;
 
+// Funcao com unico proposito de desenhar os eixos no plano do desenho
 void DesenhaEixos(void) {
-	// eixos secundarios
     int i = 0;
-	glColor3f(0.7 ,0.7 ,0.7 );	// cor cinza
+	// eixos secundarios
+	glColor3f(0.7 ,0.7 ,0.7 );
     glLineWidth(1.0);
     for (i = 0; i < 10; i++) {
         // verticais
@@ -31,8 +63,8 @@ void DesenhaEixos(void) {
         glEnd();
     }
 
-    glColor3f(0.9, 0.9, 0.9);	// cor branca
     // eixos principais
+    glColor3f(0.9, 0.9, 0.9);
 	glBegin(GL_LINES);
 		glVertex2f(0, -5.0);
 		glVertex2f(0, 5.0);
@@ -44,52 +76,69 @@ void DesenhaEixos(void) {
 	glEnd();
 }
 
+//	>>>>>> Funcao principal de desenho na tela >>>>>>
+//  Responsavel por aplicar os detalhes da curva definida 
 void Desenha(void) {
     int i;
 
+    // definicoes padrao
     glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
     glClear(GL_COLOR_BUFFER_BIT);
 
+    // desenha os eixos da tela
     DesenhaEixos();
 
-    /* The following code displays the control points as a line. */
+    // desenha os pontos definidos por clique ou manual
     glPointSize(7.0);
     glColor3f(0.4, 0.4, 1.0);
     glBegin(GL_POINTS);
         for (i = 0; i < qtde_contador; i++) 
-            glVertex3fv(&ctrlpoints[i][0]);
+            glVertex3fv(&pontos_controle_curva[i][0]);
     glEnd();
 
+    // desenha a linha que liga os pontos definidos
     glLineWidth(3.0);
     glColor3f(0.7, 0.7, 1.0);
     glBegin(GL_LINE_STRIP);
         for (i = 0; i < qtde_contador; i++) 
-            glVertex3fv(&ctrlpoints[i][0]);
+            glVertex3fv(&pontos_controle_curva[i][0]);
     glEnd();
     
-    
-    // Curva
+    // >>>>>> Funcao de desenho da curva >>>>>>
+    // apenas realiza o desenho apos finalizar a definicao de pontos
+    // necessario para quando os pontos sao definidos por clique
     if(qtde_pontos == qtde_contador) {
-        printf("\nDesenho pronto!");
         glLineWidth(3.0);
         glColor3f(1.0, 1.0, 0.0);
 
         glShadeModel(GL_FLAT);
-        glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, qtde_pontos, &ctrlpoints[0][0]);
+        
+        // define um avaliador unidimensional que usa a equacao polinomial de Bernstein para 
+        // uma quantidade n de pontos, caracterizando uma curva de Bezier.
+        // mais detalhes em https://www.glprogramming.com/red/chapter12.html
+        glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, qtde_pontos, &pontos_controle_curva[0][0]);
+        // habilita o avaliador
         glEnable(GL_MAP1_VERTEX_3);
-
+        // desenha a curva com resolucao de 30 pontos
         glBegin(GL_LINE_STRIP);
             for (i = 0; i <= 30; i++) 
                 glEvalCoord1f((GLfloat) i/30.0);
         glEnd();
     }
 
+    // cor do fundo
     glClearColor(0.2, 0.2, 0.2, 0.0);
     glFlush();
 }
 
-void reshape(int w, int h) {
+/*	>>>>>> Funcao de alteracao de tamanho de janela >>>>>>
+	Permite que o usuario altere o tamanho da janela sem afetar
+	as dimensoes do objeto desenhado. Alem disso, permite redefinir
+	o ponto central da janela, como sendo o centro real e nao o 
+	canto inferior esquerdo
+*/
+void AlteraTamanhoJanela(int w, int h) {
     glViewport(0, 0, (GLsizei) w, (GLsizei) h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -103,32 +152,41 @@ void reshape(int w, int h) {
     glLoadIdentity();
 }
 
+// >>>>>> Funcao de gerenciamento de botoes do mouse >>>>>>
+// Permite desenhar a curva a partir de cliques do mouse
 void GerenciaMouse(int button, int state, int x, int y) {
-    float xt, yt;
     int temp_contador;
+    // pontos da curva
+    float xt, yt;
 
+    // identifica cliques do botao esquerdo
     if (button == GLUT_LEFT_BUTTON)
+        // apenas para a quantidade de pontos escolhida
         if (state == GLUT_DOWN && qtde_contador < qtde_pontos) {
+            // transforma para a escala usada
             xt = (float)(x - 250)/50;
             yt = (float)(y - 250)/50*(-1);
 
-            ctrlpoints[qtde_contador][0] = (GLfloat) xt;
-            ctrlpoints[qtde_contador][1] = (GLfloat) yt; 
-            ctrlpoints[qtde_contador][2] = 0.0;
+            // adiciona aos pontos de controle
+            pontos_controle_curva[qtde_contador][0] = (GLfloat) xt;
+            pontos_controle_curva[qtde_contador][1] = (GLfloat) yt; 
+            pontos_controle_curva[qtde_contador][2] = 0.0;
             
+            // verifica se houve repeticao
             for(temp_contador = qtde_contador-1; temp_contador >= 0; temp_contador--) {
-                if(ctrlpoints[temp_contador][0] == xt || ctrlpoints[temp_contador][1] == yt) {
+                if(pontos_controle_curva[temp_contador][0] == xt || pontos_controle_curva[temp_contador][1] == yt) {
                     printf("\n***** Nao repita pontos! *****\n");
                     qtde_contador--;
                 }
             }
 
-            printf("%d: x=%.2f; y=%.2f\n", qtde_contador+1, ctrlpoints[qtde_contador][0], ctrlpoints[qtde_contador][1]);
+            printf("%d: x=%.2f; y=%.2f\n", qtde_contador+1, pontos_controle_curva[qtde_contador][0], pontos_controle_curva[qtde_contador][1]);
             qtde_contador++;
         } 
     glutPostRedisplay();
 }
 
+// funcao de direcionamento do usuario
 void menuPrincipal() {
     int opcao, valido = 0;
 
@@ -139,6 +197,7 @@ void menuPrincipal() {
     printf("7\n");
     scanf("%d", &qtde_pontos);
 
+    // verifica se esta dentro do definido nos requisitos
     if(!(qtde_pontos == 3 || qtde_pontos == 5 || qtde_pontos == 7)) {
         printf("\nEscolha uma quantidade de pontos valida!\n");
         exit(-1);
@@ -155,6 +214,7 @@ void menuPrincipal() {
     switch (opcao) {
     case 1:
         printf("\nPode clicar %d vezes\nCoordenadas:\n", qtde_pontos);
+        // habilita desenho por cliques do mouse
         mouse = 1;
         break;
     case 2:
@@ -165,8 +225,9 @@ void menuPrincipal() {
             printf("\nDigite a coordenada y%d: ", qtde_contador+1);
             scanf("%f", &temp_y);
             
+            // verifica se pontos sao repetidos
             for(temp_contador = qtde_contador-1; temp_contador >= 0; temp_contador--) {
-                if(ctrlpoints[temp_contador][0] == temp_x && ctrlpoints[temp_contador][1] == temp_y) {
+                if(pontos_controle_curva[temp_contador][0] == temp_x && pontos_controle_curva[temp_contador][1] == temp_y) {
                     printf("\n***** Nao repita pontos! *****\n");
                     qtde_contador--;
                     valido = 0;
@@ -174,11 +235,12 @@ void menuPrincipal() {
                     valido = 1;
             }
 
+            // se nao forem, verifica se estao dentro do universo
             if(valido){
                 if((temp_x <= 5.0 && temp_y <= 5.0) && (temp_x >= -5.0 && temp_y >= -5.0)) {
-                    ctrlpoints[qtde_contador][0] = temp_x;
-                    ctrlpoints[qtde_contador][1] = temp_y;
-                    ctrlpoints[qtde_contador][2] = 0.0;
+                    pontos_controle_curva[qtde_contador][0] = temp_x;
+                    pontos_controle_curva[qtde_contador][1] = temp_y;
+                    pontos_controle_curva[qtde_contador][2] = 0.0;
                 } else {
                     printf("\n***** Defina pontos validos (entre -5.0 e 5.0)! *****\n");
                     qtde_contador--;
@@ -197,14 +259,16 @@ int main(int argc, char** argv)
     // exibe menu com primeiras opcoes	
 	menuPrincipal();
 
+    // define propriedades da janela
     glutInit(&argc, argv);
     glutInitDisplayMode (GLUT_SINGLE | GLUT_RGB);
     glutInitWindowSize(500, 500);
     glutInitWindowPosition(100, 100);
-
     glutCreateWindow ("Trabalho 2");
+    
+    // inicia funcoes de desenho
     glutDisplayFunc(Desenha);
-    glutReshapeFunc(reshape);
+    glutReshapeFunc(AlteraTamanhoJanela);
     if(mouse)
         glutMouseFunc(GerenciaMouse);
     
