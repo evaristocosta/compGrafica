@@ -133,17 +133,16 @@ void DesenhaHexagono(void) {
 void Desenha(void) {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	           
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	// define os eixos da figura
 	DesenhaEixos();
 
 	// Define a cor corrente
-	glColor3f(1.0f,1.0f,0.0f);	// cor amarela
+	glColor3f(1.0, 1.0, 0.0);	// cor amarela
 
 	// efetua translacao
-	glTranslatef(x_trans, y_trans, 0.0f);
+	glTranslatef(x_trans, y_trans, 0.0);
 	
 	// efetua escala
 	glScalef(escala, escala, 1.0);
@@ -208,7 +207,7 @@ void AlteraTamanhoJanela(int w, int h) {
 }
 
 // funcao de direcionamento do usuario
-void menuPrincipal() {
+void menu() {
 	int opcao;
 
 	printf("-------- Passo 1 --------\n");
@@ -424,7 +423,7 @@ void GerenciaMouse(int button, int state, int x, int y) {
 
 int main(int argc, char** argv) {
 	// exibe menu com primeiras opcoes	
-	menuPrincipal();
+	menu();
 
 	glutInit (&argc, argv);
 	// double buffer
