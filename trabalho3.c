@@ -1,9 +1,11 @@
 // Para compilar e executar (em linux):
-// gcc -lglut -lGL -lGLU -lm trabalho3.c GLP/glutp.c -o trabalho3.out && ./trabalho3.out
+// gcc -lglut -lGL -lGLU -lm trabalho3.c GLP/glutp.c -o trabalho3.out &&
+// ./trabalho3.out
 
-#include "GLP/glutp.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "GLP/glutp.h"
 
 // inteiros de definicao para os objetos que podem ser construidos
 #define CUBO 1
@@ -13,6 +15,8 @@
 
 GLint primitiva;
 GLfloat angulo, aspecto;
+
+bool aramado = false;
 
 // Função callback chamada para fazer o desenho
 void DesenhaEixos() {
@@ -77,38 +81,41 @@ void DesenhaEixos() {
     glLineWidth(1.0);
 }
 
-
 void Desenha(void) {
     glClear(GL_COLOR_BUFFER_BIT);
 
     DesenhaEixos();
-    
+
     glColor3f(1.0, 1.0, 0.0);
 
     GLfloat tam = 20.0;
 
     // Desenha o teapot com a cor corrente (wire-frame)
     switch (primitiva) {
-    case CUBO:
-        printf("Defina o tamanho");
-        glutWireCube(20.0);
-        break;
-    case ESFERA:
-        printf("Defina o tamanho (raio)");
-        printf("Defina a resolucao");
-        glutWireSphere(20.0, 25, 25);
-        break;
-    case CONE:
-        printf("Defina a base (raio)");
-        printf("Defina a altura");
-        printf("Defina a resolucao");
-        glutWireCone(20.0, 20.0, 25, 25);
-        break;
-    case TETRAEDRO:
-        printf("Defina o tamanho");
-        glutWireTetrahedronP(20.0);
+        case CUBO:
+            printf("Defina o tamanho");
+            aramado ? glutWireCube(20.0) 
+                    : glutSolidCube(20.0);
+            break;
+        case ESFERA:
+            printf("Defina o tamanho (raio)");
+            printf("Defina a resolucao");
+            aramado ? glutWireSphere(20.0, 25, 25)
+                    : glutSolidSphere(20.0, 25, 25);
+            break;
+        case CONE:
+            printf("Defina a base (raio)");
+            printf("Defina a altura");
+            printf("Defina a resolucao");
+            aramado ? glutWireCone(20.0, 20.0, 25, 25)
+                    : glutSolidCone(20.0, 20.0, 25, 25);
+            break;
+        case TETRAEDRO:
+            printf("Defina o tamanho");
+            aramado ? glutWireTetrahedronP(20.0) 
+                    : glutWireTetrahedronP(20.0);
 
-        break;
+            break;
     }
 
     // Executa os comandos OpenGL
@@ -154,6 +161,17 @@ void AlteraTamanhoJanela(GLsizei w, GLsizei h) {
     EspecificaParametrosVisualizacao();
 }
 
+void GerenciaTeclado(unsigned char key, int x, int y) {
+    switch (key) {
+        case 'z':
+        case 'Z':
+            aramado = !aramado;
+            break;
+    }
+    EspecificaParametrosVisualizacao();
+    glutPostRedisplay();
+}
+
 // Função callback chamada para gerenciar eventos do mouse
 void GerenciaMouse(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON)
@@ -168,7 +186,7 @@ void GerenciaMouse(int button, int state, int x, int y) {
     glutPostRedisplay();
 }
 void menu() {
-    int opcao = 4;
+    int opcao = 1;
 
     printf("-------- Passo 1 --------\n");
     printf("Selecione o objeto: \n");
@@ -176,7 +194,7 @@ void menu() {
     printf("2 - Esfera\n");
     printf("3 - Cone\n");
     printf("4 - Tetraedro\n");
-    //scanf("%d", &opcao);
+    // scanf("%d", &opcao);
 
     switch (opcao) {
         case 1:
@@ -198,7 +216,6 @@ void menu() {
 int main(int argc, char** argv) {
     menu();
 
-
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(650, 600);
@@ -206,6 +223,7 @@ int main(int argc, char** argv) {
     glutDisplayFunc(Desenha);
     glutReshapeFunc(AlteraTamanhoJanela);
     glutMouseFunc(GerenciaMouse);
+    glutKeyboardFunc(GerenciaTeclado);
     Inicializa();
     glutMainLoop();
 

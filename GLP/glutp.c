@@ -11,16 +11,16 @@ void glutWireTetrahedronP(GLdouble dSize) {
    * Normals:  The unit normals are simply the negative of the coordinates of the point not on the surface.
    */
 
-    double r0[3] = {1.0 * dSize, 0.0, 0.0};
+    double r0[3] = {1.0*dSize, 0.0, 0.0};
     double r1[3] = {-0.333333333333*dSize, 0.942809041582*dSize, 0.0};
     double r2[3] = {-0.333333333333*dSize, -0.471404520791*dSize, 0.816496580928*dSize};
     double r3[3] = {-0.333333333333*dSize, -0.471404520791*dSize, -0.816496580928*dSize};
 
     glBegin(GL_LINE_LOOP);
-    glNormal3d (           -1.0,             0.0,             0.0 ) ; glVertex3dv ( r1 ) ; glVertex3dv ( r3 ) ; glVertex3dv ( r2 ) ;
-    glNormal3d ( 0.333333333333, -0.942809041582,             0.0 ) ; glVertex3dv ( r0 ) ; glVertex3dv ( r2 ) ; glVertex3dv ( r3 ) ;
-    glNormal3d ( 0.333333333333,  0.471404520791, -0.816496580928 ) ; glVertex3dv ( r0 ) ; glVertex3dv ( r3 ) ; glVertex3dv ( r1 ) ;
-    glNormal3d ( 0.333333333333,  0.471404520791,  0.816496580928 ) ; glVertex3dv ( r0 ) ; glVertex3dv ( r1 ) ; glVertex3dv ( r2 ) ;
+    glNormal3d (           -1.0*dSize,             0.0,             0.0 ) ; glVertex3dv ( r1 ) ; glVertex3dv ( r3 ) ; glVertex3dv ( r2 ) ;
+    glNormal3d ( 0.333333333333*dSize, -0.942809041582*dSize,             0.0 ) ; glVertex3dv ( r0 ) ; glVertex3dv ( r2 ) ; glVertex3dv ( r3 ) ;
+    glNormal3d ( 0.333333333333*dSize,  0.471404520791*dSize, -0.816496580928*dSize ) ; glVertex3dv ( r0 ) ; glVertex3dv ( r3 ) ; glVertex3dv ( r1 ) ;
+    glNormal3d ( 0.333333333333*dSize,  0.471404520791*dSize,  0.816496580928*dSize ) ; glVertex3dv ( r0 ) ; glVertex3dv ( r1 ) ; glVertex3dv ( r2 ) ;
   glEnd() ;
 }
 
@@ -36,15 +36,15 @@ void glutSolidTetrahedronP(GLdouble dSize) {
    * Normals:  The unit normals are simply the negative of the coordinates of the point not on the surface.
    */
 
-    double r0[3] = {1.0 * dSize, 0.0, 0.0};
+    double r0[3] = {1.0 *dSize, 0.0, 0.0};
     double r1[3] = {-0.333333333333*dSize, 0.942809041582*dSize, 0.0};
     double r2[3] = {-0.333333333333*dSize, -0.471404520791*dSize, 0.816496580928*dSize};
     double r3[3] = {-0.333333333333*dSize, -0.471404520791*dSize, -0.816496580928*dSize};
 
     glBegin(GL_TRIANGLES);
-    glNormal3d (           -1.0,             0.0,             0.0 ) ; glVertex3dv ( r1 ) ; glVertex3dv ( r3 ) ; glVertex3dv ( r2 ) ;
-    glNormal3d ( 0.333333333333, -0.942809041582,             0.0 ) ; glVertex3dv ( r0 ) ; glVertex3dv ( r2 ) ; glVertex3dv ( r3 ) ;
-    glNormal3d ( 0.333333333333,  0.471404520791, -0.816496580928 ) ; glVertex3dv ( r0 ) ; glVertex3dv ( r3 ) ; glVertex3dv ( r1 ) ;
-    glNormal3d ( 0.333333333333,  0.471404520791,  0.816496580928 ) ; glVertex3dv ( r0 ) ; glVertex3dv ( r1 ) ; glVertex3dv ( r2 ) ;
+    glNormal3d (           -1.0*dSize,             0.0,             0.0 ) ; glVertex3dv ( r1 ) ; glVertex3dv ( r3 ) ; glVertex3dv ( r2 ) ;
+    glNormal3d ( 0.333333333333*dSize, -0.942809041582*dSize,             0.0 ) ; glVertex3dv ( r0 ) ; glVertex3dv ( r2 ) ; glVertex3dv ( r3 ) ;
+    glNormal3d ( 0.333333333333*dSize,  0.471404520791*dSize, -0.816496580928*dSize ) ; glVertex3dv ( r0 ) ; glVertex3dv ( r3 ) ; glVertex3dv ( r1 ) ;
+    glNormal3d ( 0.333333333333*dSize,  0.471404520791*dSize,  0.816496580928*dSize ) ; glVertex3dv ( r0 ) ; glVertex3dv ( r1 ) ; glVertex3dv ( r2 ) ;
   glEnd() ;
 }
