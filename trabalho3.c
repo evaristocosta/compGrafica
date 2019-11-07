@@ -1,16 +1,21 @@
 // Para compilar e executar (em linux):
-// gcc -lglut -lGL -lGLU -lm trabalho3.c -o trabalho3.out && ./trabalho3.out
+// gcc -lglut -lGL -lGLU -lm trabalho3.c GLP/glutp.c -o trabalho3.out && ./trabalho3.out
 
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
+#include "GLP/glutp.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-GLfloat angle, fAspect;
+// inteiros de definicao para os objetos que podem ser construidos
+#define CUBO 1
+#define ESFERA 2
+#define CONE 3
+#define TETRAEDRO 4
+
+GLint primitiva;
+GLfloat angulo, aspecto;
 
 // Função callback chamada para fazer o desenho
-void DesenhaEixos () {
+void DesenhaEixos() {
     int i = 0;
 
     glColor3f(0.6, 0.6, 0.6);
@@ -33,40 +38,39 @@ void DesenhaEixos () {
     glColor3f(1.0, 0.0, 0.0);
     glBegin(GL_LINES);
     glVertex3f(0, 0, 0);
-    glVertex3f(0, 75, 0);
+    glVertex3f(0, 25, 0);
     glEnd();
 
     glColor3f(0.0, 0.0, 1.0);
     glBegin(GL_LINES);
     glVertex3f(0, 0, 0);
-    glVertex3f(75, 0, 0);
+    glVertex3f(25, 0, 0);
     glEnd();
 
     glColor3f(0.0, 1.0, 0.0);
     glBegin(GL_LINES);
     glVertex3f(0, 0, 0);
-    glVertex3f(0, 0, 75);
+    glVertex3f(0, 0, 25);
     glEnd();
 
     glEnable(GL_LINE_STIPPLE);
     glLineStipple(1, 0x0F0F);
-    // glLineWidth(1.5);
     glColor3f(1.0, 0.0, 0.0);
     glBegin(GL_LINES);
     glVertex3f(0, 0, 0);
-    glVertex3f(0, -75, 0);
+    glVertex3f(0, -25, 0);
     glEnd();
 
     glColor3f(0.0, 0.0, 1.0);
     glBegin(GL_LINES);
     glVertex3f(0, 0, 0);
-    glVertex3f(-75, 0, 0);
+    glVertex3f(-25, 0, 0);
     glEnd();
 
     glColor3f(0.0, 1.0, 0.0);
     glBegin(GL_LINES);
     glVertex3f(0, 0, 0);
-    glVertex3f(0, 0, -75);
+    glVertex3f(0, 0, -25);
     glEnd();
     glDisable(GL_LINE_STIPPLE);
 
@@ -79,10 +83,33 @@ void Desenha(void) {
 
     DesenhaEixos();
     
-    glColor3f(1.0, 0.25, 0.0);
+    glColor3f(1.0, 1.0, 0.0);
+
+    GLfloat tam = 20.0;
 
     // Desenha o teapot com a cor corrente (wire-frame)
-    glutWireTeapot(20.0);
+    switch (primitiva) {
+    case CUBO:
+        printf("Defina o tamanho");
+        glutWireCube(20.0);
+        break;
+    case ESFERA:
+        printf("Defina o tamanho (raio)");
+        printf("Defina a resolucao");
+        glutWireSphere(20.0, 25, 25);
+        break;
+    case CONE:
+        printf("Defina a base (raio)");
+        printf("Defina a altura");
+        printf("Defina a resolucao");
+        glutWireCone(20.0, 20.0, 25, 25);
+        break;
+    case TETRAEDRO:
+        printf("Defina o tamanho");
+        glutWireTetrahedronP(20.0);
+
+        break;
+    }
 
     // Executa os comandos OpenGL
     glutSwapBuffers();
@@ -91,7 +118,7 @@ void Desenha(void) {
 // Inicializa parâmetros de rendering
 void Inicializa(void) {
     glClearColor(0.2, 0.2, 0.2, 1.0);
-    angle = 45;
+    angulo = 45;
 }
 
 // Função usada para especificar o volume de visualização
@@ -102,7 +129,7 @@ void EspecificaParametrosVisualizacao(void) {
     glLoadIdentity();
 
     // Especifica a projeção perspectiva
-    gluPerspective(angle, fAspect, .5, 500);
+    gluPerspective(angulo, aspecto, .5, 500);
 
     // Especifica sistema de coordenadas do modelo
     glMatrixMode(GL_MODELVIEW);
@@ -110,7 +137,7 @@ void EspecificaParametrosVisualizacao(void) {
     glLoadIdentity();
 
     // Especifica posição do observador e do alvo
-    gluLookAt(80, 80, 200, 0, 0, 0, 0, 1, 0);
+    gluLookAt(80, 80, 100, 0, 0, 0, 0, 1, 0);
 }
 
 // Função callback chamada quando o tamanho da janela é alterado
@@ -122,7 +149,7 @@ void AlteraTamanhoJanela(GLsizei w, GLsizei h) {
     glViewport(0, 0, w, h);
 
     // Calcula a correção de aspecto
-    fAspect = (GLfloat)w / (GLfloat)h;
+    aspecto = (GLfloat)w / (GLfloat)h;
 
     EspecificaParametrosVisualizacao();
 }
@@ -131,18 +158,47 @@ void AlteraTamanhoJanela(GLsizei w, GLsizei h) {
 void GerenciaMouse(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON)
         if (state == GLUT_DOWN) {  // Zoom-in
-            if (angle >= 10) angle -= 5;
+            if (angulo >= 10) angulo -= 5;
         }
     if (button == GLUT_RIGHT_BUTTON)
         if (state == GLUT_DOWN) {  // Zoom-out
-            if (angle <= 130) angle += 5;
+            if (angulo <= 130) angulo += 5;
         }
     EspecificaParametrosVisualizacao();
     glutPostRedisplay();
 }
+void menu() {
+    int opcao = 4;
+
+    printf("-------- Passo 1 --------\n");
+    printf("Selecione o objeto: \n");
+    printf("1 - Cubo\n");
+    printf("2 - Esfera\n");
+    printf("3 - Cone\n");
+    printf("4 - Tetraedro\n");
+    //scanf("%d", &opcao);
+
+    switch (opcao) {
+        case 1:
+            primitiva = CUBO;
+            break;
+        case 2:
+            primitiva = ESFERA;
+            break;
+        case 3:
+            primitiva = CONE;
+            break;
+        case 4:
+            primitiva = TETRAEDRO;
+            break;
+    }
+}
 
 // Programa Principal
 int main(int argc, char** argv) {
+    menu();
+
+
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(650, 600);
