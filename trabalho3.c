@@ -10,40 +10,79 @@
 GLfloat angle, fAspect;
 
 // Função callback chamada para fazer o desenho
-void Desenha(void) {
-    glClear(GL_COLOR_BUFFER_BIT);
+void DesenhaEixos () {
+    int i = 0;
 
+    glColor3f(0.6, 0.6, 0.6);
+    glLineWidth(1.0);
+    for (i = -5; i <= 5; i++) {
+        // verticais
+        glBegin(GL_LINES);
+        glVertex3f((GLfloat)i * 10, 0.0, -50);
+        glVertex3f((GLfloat)i * 10, 0.0, 50);
+        glEnd();
+
+        // horizontais
+        glBegin(GL_LINES);
+        glVertex3f(-50, 0.0, (GLfloat)i * 10);
+        glVertex3f(50, 0.0, (GLfloat)i * 10);
+        glEnd();
+    }
+
+    glLineWidth(2.0);
     glColor3f(1.0, 0.0, 0.0);
     glBegin(GL_LINES);
     glVertex3f(0, 0, 0);
-    glVertex3f(0, 250, 0);
+    glVertex3f(0, 75, 0);
     glEnd();
 
     glColor3f(0.0, 0.0, 1.0);
     glBegin(GL_LINES);
     glVertex3f(0, 0, 0);
-    glVertex3f(250, 0, 0);
+    glVertex3f(75, 0, 0);
     glEnd();
 
     glColor3f(0.0, 1.0, 0.0);
     glBegin(GL_LINES);
     glVertex3f(0, 0, 0);
-    glVertex3f(0, 0, 250);
+    glVertex3f(0, 0, 75);
     glEnd();
 
-    glPushAttrib(GL_ENABLE_BIT);
-    glLineStipple(1, 0x1234);
+    glEnable(GL_LINE_STIPPLE);
+    glLineStipple(1, 0x0F0F);
+    // glLineWidth(1.5);
+    glColor3f(1.0, 0.0, 0.0);
     glBegin(GL_LINES);
-    glVertex3f(0, 0, -250);
     glVertex3f(0, 0, 0);
+    glVertex3f(0, -75, 0);
     glEnd();
-    glPopAttrib();
 
-    glColor3f(1.0, 1.0, 1.0);
+    glColor3f(0.0, 0.0, 1.0);
+    glBegin(GL_LINES);
+    glVertex3f(0, 0, 0);
+    glVertex3f(-75, 0, 0);
+    glEnd();
+
+    glColor3f(0.0, 1.0, 0.0);
+    glBegin(GL_LINES);
+    glVertex3f(0, 0, 0);
+    glVertex3f(0, 0, -75);
+    glEnd();
+    glDisable(GL_LINE_STIPPLE);
+
+    glLineWidth(1.0);
+}
+
+
+void Desenha(void) {
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    DesenhaEixos();
+    
+    glColor3f(1.0, 0.25, 0.0);
 
     // Desenha o teapot com a cor corrente (wire-frame)
-    glutWireCube(50.0);
-
+    glutWireTeapot(20.0);
 
     // Executa os comandos OpenGL
     glutSwapBuffers();
