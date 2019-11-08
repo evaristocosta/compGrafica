@@ -1,6 +1,5 @@
 // Para compilar e executar (em linux):
-// gcc -lglut -lGL -lGLU -lm trabalho3.c GLP/glutp.c -o trabalho3.out &&
-// ./trabalho3.out
+// gcc -lglut -lGL -lGLU -lm trabalho3.c GLP/glutp.c -o trabalho3.out && ./trabalho3.out
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -16,8 +15,8 @@
 GLint primitiva;
 GLfloat angulo, aspecto, tamanho, resolucao;
 GLfloat transl_x = 0.0, transl_y = 0.0, transl_z = 0.0;
-GLfloat rot_x = 0.0, rot_y = 0.0, rot_z = 0.0, rot_angl = 0.0;
-
+GLfloat rot_x = 0.0, rot_y = 0.0, rot_z = 0.0;
+GLint posicao_h = 80, posicao_v = 80, aproximacao = 100;
 bool aramado = true;
 
 // Função callback chamada para fazer o desenho
@@ -87,7 +86,6 @@ void Desenha(void) {
     glClear(GL_COLOR_BUFFER_BIT);
 
     DesenhaEixos();
-
     glColor3f(1.0, 1.0, 0.0);
 
     // efetua translacao
@@ -147,7 +145,7 @@ void EspecificaParametrosVisualizacao(void) {
     glLoadIdentity();
 
     // Especifica posição do observador e do alvo
-    gluLookAt(80, 80, 100, 0, 0, 0, 0, 1, 0);
+    gluLookAt(posicao_h, posicao_v, aproximacao, 0, 0, 0, 0, 1, 0);
 }
 
 // Função callback chamada quando o tamanho da janela é alterado
@@ -170,24 +168,78 @@ void GerenciaTeclado(unsigned char key, int x, int y) {
         case 'Z':
             aramado = !aramado;
             break;
+
+        case 'd':
+        case 'D':
+            if(posicao_h <= 200) posicao_h += 10;
+            if(aproximacao > 0) aproximacao -= 10;
+            break;
+        case 'a':
+        case 'A':
+            if (posicao_h > 0) posicao_h -= 10;
+            if (aproximacao <= 200) aproximacao += 10;
+            break;
+        case 'w':
+        case 'W':
+            if (posicao_v <= 200) posicao_v += 10;
+            break;
+        case 's':
+        case 'S':
+            if (posicao_v > -200) posicao_v -= 10;
+            break;
+        case 'q':
+        case 'Q':
+            if (angulo >= 10) angulo -= 5;
+            break;
+        case 'e':
+        case 'E':
+            if (angulo <= 130) angulo += 5;
+            break;
+
+        //transladar
+        case 'r':
+            transl_x += 5;
+            break;
+        case 't':
+            transl_x -= 5;
+            break;
+        case 'f':
+            transl_y += 5;
+            break;
+        case 'g':
+            transl_y -= 5;
+            break;
+        case 'c':
+            transl_z += 5;
+            break;
+        case 'v':
+            transl_z -= 5;
+            break;
+
+        //rotacionar
+        case 'y':
+            rot_x += 5.0;
+            break;
+        case 'u':
+            rot_x -= 5.0;
+            break;
+        case 'h':
+            rot_y += 5.0;
+            break;
+        case 'j':
+            rot_y -= 5.0;
+            break;
+        case 'b':
+            rot_z += 5.0;
+            break;
+        case 'n':
+            rot_z -= 5.0;
+            break;
     }
     EspecificaParametrosVisualizacao();
     glutPostRedisplay();
 }
 
-// Função callback chamada para gerenciar eventos do mouse
-void GerenciaMouse(int button, int state, int x, int y) {
-    if (button == GLUT_LEFT_BUTTON)
-        if (state == GLUT_DOWN) {  // Zoom-in
-            if (angulo >= 10) angulo -= 5;
-        }
-    if (button == GLUT_RIGHT_BUTTON)
-        if (state == GLUT_DOWN) {  // Zoom-out
-            if (angulo <= 130) angulo += 5;
-        }
-    EspecificaParametrosVisualizacao();
-    glutPostRedisplay();
-}
 void menu() {
     int opcao;
 
@@ -291,19 +343,27 @@ void menuSecundario() {
 
 // Programa Principal
 int main(int argc, char** argv) {
+
     menu();
+
+    int opcao;
+    printf("Usar entrada manual?\n");
+    printf("1- Sim\n");
+    printf("0- Nao\n");
+    scanf("%d", &opcao);
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(650, 600);
-    glutCreateWindow("Visualizacao 3D");
+    glutCreateWindow("Solidos 3D");
     glutDisplayFunc(Desenha);
     glutReshapeFunc(AlteraTamanhoJanela);
-    glutMouseFunc(GerenciaMouse);
     glutKeyboardFunc(GerenciaTeclado);
     Inicializa();
 
-    glutIdleFunc(menuSecundario);
+    if(opcao)
+        glutIdleFunc(menuSecundario);
+
     glutMainLoop();
 
     return 0;
