@@ -14,9 +14,11 @@
 #define TETRAEDRO 4
 
 GLint primitiva;
-GLfloat angulo, aspecto;
+GLfloat angulo, aspecto, tamanho, resolucao;
+GLfloat transl_x = 0.0, transl_y = 0.0, transl_z = 0.0;
+GLfloat rot_x = 0.0, rot_y = 0.0, rot_z = 0.0, rot_angl = 0.0;
 
-bool aramado = false;
+bool aramado = true;
 
 // Função callback chamada para fazer o desenho
 void DesenhaEixos() {
@@ -88,35 +90,36 @@ void Desenha(void) {
 
     glColor3f(1.0, 1.0, 0.0);
 
-    GLfloat tam = 20.0;
+    // efetua translacao
+    glTranslatef(transl_x, transl_y, transl_z);
+    glRotatef(rot_x, 1.0, 0.0, 0.0);
+    glRotatef(rot_y, 0.0, 1.0, 0.0);
+    glRotatef(rot_z, 0.0, 0.0, 1.0);
 
     // Desenha o teapot com a cor corrente (wire-frame)
     switch (primitiva) {
         case CUBO:
-            printf("Defina o tamanho");
-            aramado ? glutWireCube(20.0) 
-                    : glutSolidCube(20.0);
+            aramado ? glutWireCube(tamanho) : glutSolidCube(tamanho);
             break;
         case ESFERA:
-            printf("Defina o tamanho (raio)");
-            printf("Defina a resolucao");
-            aramado ? glutWireSphere(20.0, 25, 25)
-                    : glutSolidSphere(20.0, 25, 25);
+            aramado ? glutWireSphere(tamanho, resolucao, resolucao)
+                    : glutSolidSphere(tamanho, resolucao, resolucao);
             break;
         case CONE:
-            printf("Defina a base (raio)");
-            printf("Defina a altura");
-            printf("Defina a resolucao");
-            aramado ? glutWireCone(20.0, 20.0, 25, 25)
-                    : glutSolidCone(20.0, 20.0, 25, 25);
+            aramado ? glutWireCone(tamanho / 2, tamanho, resolucao, resolucao)
+                    : glutSolidCone(tamanho / 2, tamanho, resolucao, resolucao);
             break;
         case TETRAEDRO:
-            printf("Defina o tamanho");
-            aramado ? glutWireTetrahedronP(20.0) 
-                    : glutWireTetrahedronP(20.0);
+            aramado ? glutWireTetrahedronP(tamanho)
+                    : glutWireTetrahedronP(tamanho);
 
             break;
     }
+
+    glTranslatef(-transl_x, -transl_y, -transl_z);
+    glRotatef(-rot_x, 1.0, 0.0, 0.0);
+    glRotatef(-rot_y, 0.0, 1.0, 0.0);
+    glRotatef(-rot_z, 0.0, 0.0, 1.0);
 
     // Executa os comandos OpenGL
     glutSwapBuffers();
@@ -186,7 +189,7 @@ void GerenciaMouse(int button, int state, int x, int y) {
     glutPostRedisplay();
 }
 void menu() {
-    int opcao = 1;
+    int opcao;
 
     printf("-------- Passo 1 --------\n");
     printf("Selecione o objeto: \n");
@@ -194,22 +197,96 @@ void menu() {
     printf("2 - Esfera\n");
     printf("3 - Cone\n");
     printf("4 - Tetraedro\n");
-    // scanf("%d", &opcao);
+    scanf("%d", &opcao);
 
     switch (opcao) {
         case 1:
+            printf("Defina o tamanho:\n");
+            scanf("%f", &tamanho);
             primitiva = CUBO;
             break;
         case 2:
+            printf("Defina o tamanho (raio):\n");
+            scanf("%f", &tamanho);
+            printf("Defina a resolucao:\n");
+            scanf("%f", &resolucao);
             primitiva = ESFERA;
             break;
         case 3:
+            printf("Defina a base (raio):\n");
+            scanf("%f", &tamanho);
+            printf("Defina a resolucao:\n");
+            scanf("%f", &resolucao);
             primitiva = CONE;
             break;
         case 4:
+            printf("Defina o tamanho:\n");
+            scanf("%f", &tamanho);
             primitiva = TETRAEDRO;
             break;
     }
+}
+
+void menuSecundario() {
+    int opcao;
+    char eixo;
+
+    printf("---- Entrada manual ----\n");
+    printf("Escolha uma operacao:\n");
+    printf("1- Alterar representacao (solido/aramado)\n");
+    printf("2- Transladar\n");
+    printf("3- Rotacionar\n");
+    scanf("%d", &opcao);
+
+    switch (opcao) {
+        case 1:
+            aramado = !aramado;
+            break;
+        case 2:
+            printf("Defina o eixo (x/y/z):\n");
+            scanf(" %c", &eixo);
+            printf("Defina a posicao:\n");
+            switch (eixo) {
+                case 'x':
+                    scanf("%f", &transl_x);
+                    break;
+                case 'y':
+                    scanf("%f", &transl_y);
+                    break;
+                case 'z':
+                    scanf("%f", &transl_z);
+                    break;
+                default:
+                    break;
+            }
+
+            break;
+        case 3:
+            printf("Defina o eixo (x/y/z):\n");
+            scanf(" %c", &eixo);
+            printf("Defina o angulo neste eixo:\n");
+            switch (eixo) {
+                case 'x':
+                    scanf("%f", &rot_x);
+                    break;
+                case 'y':
+                    scanf("%f", &rot_y);
+                    break;
+                case 'z':
+                    scanf("%f", &rot_z);
+                    break;
+                default:
+                    break;
+            }
+
+            break;
+        default:
+            printf("Opcao invalida!\n");
+            break;
+    }
+    
+    EspecificaParametrosVisualizacao();
+    glutPostRedisplay();
 }
 
 // Programa Principal
@@ -225,6 +302,8 @@ int main(int argc, char** argv) {
     glutMouseFunc(GerenciaMouse);
     glutKeyboardFunc(GerenciaTeclado);
     Inicializa();
+
+    glutIdleFunc(menuSecundario);
     glutMainLoop();
 
     return 0;
