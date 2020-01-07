@@ -43,8 +43,7 @@
  */
 
 // Para compilar e executar (em linux):
-// gcc -lglut -lGL -lGLU -lm trabalho3.c GLP/glutp.c -o trabalho3.out &&
-// ./trabalho3.out
+// gcc -lglut -lGL -lGLU -lm trabalho3.c GLP/glutp.c -o trabalho3.out && ./trabalho3.out
 
 #include <math.h>
 #include <stdbool.h>
@@ -367,7 +366,7 @@ void menu() {
             scanf("%f", &resolucao);
             while (resolucao > 500) {
                 printf(
-                    "Tamanho maximo excedido! Escolha um valor menor "
+                    "Resolucao maxima excedida! Escolha um valor menor "
                     "(<=500):\n");
                 scanf("%f", &resolucao);
             }
@@ -381,7 +380,7 @@ void menu() {
             scanf("%f", &resolucao);
             while (resolucao > 500) {
                 printf(
-                    "Tamanho maximo excedido! Escolha um valor menor "
+                    "Resolucao maxima excedida! Escolha um valor menor "
                     "(<=500):\n");
                 scanf("%f", &resolucao);
             }
